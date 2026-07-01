@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from playwright.sync_api import Page
+from playwright.sync_api import Page, TimeoutError
 
 from pages.base_page import BasePage
 from pages.cart_modal import CartModal
@@ -23,10 +23,20 @@ class ProductDetailPage(BasePage):
         )
         self.quantity_input = page.locator("#quantity")
         self.add_to_cart_button = page.locator("button.cart")
+        self.price_text = self.product_information.locator("span span").first
+        self.availability_text = self.product_information.locator("p").filter(
+            has_text="Availability"
+        )
+        self.condition_text = self.product_information.locator("p").filter(
+            has_text="Condition"
+        )
+        self.brand_text = self.product_information.locator("p").filter(has_text="Brand")
+        self.write_review_heading = page.get_by_role("link", name="Write Your Review")
         self.review_name_input = page.locator("#review-form #name")
         self.review_email_input = page.locator("#review-form #email")
         self.review_textarea = page.locator("#review-form #review")
         self.review_submit_button = page.locator("#button-review")
+        self.review_success_message = page.get_by_text("Thank you for your review.")
 
     def load(self, product_id: int | None = None) -> None:
         """Open a product details page by product id."""
@@ -41,9 +51,14 @@ class ProductDetailPage(BasePage):
 
     def add_to_cart(self) -> CartModal:
         """Add the displayed product to cart and return the modal component."""
+        self.add_to_cart_button.scroll_into_view_if_needed()
         self.add_to_cart_button.click()
         modal = CartModal(self.page)
-        modal.wait_until_visible()
+        try:
+            modal.wait_until_visible(timeout=10_000)
+        except TimeoutError:
+            self.add_to_cart_button.click()
+            modal.wait_until_visible()
         return modal
 
     def fill_review(self, *, name: str, email: str, review: str) -> None:
@@ -51,3 +66,8 @@ class ProductDetailPage(BasePage):
         self.review_name_input.fill(name)
         self.review_email_input.fill(email)
         self.review_textarea.fill(review)
+
+    def submit_review(self, *, name: str, email: str, review: str) -> None:
+        """Fill and submit the product review form."""
+        self.fill_review(name=name, email=email, review=review)
+        self.review_submit_button.click()
