@@ -1,0 +1,62 @@
+[project]
+name = "automation-website-project"
+version = "0.1.0"
+description = "Playwright Python end-to-end test framework for automationexercise.com."
+requires-python = ">=3.13"
+dependencies = [
+    "allure-pytest>=2.16.0",
+    "faker>=40.23.0",
+    "playwright>=1.60.0",
+    "pytest>=9.1.1",
+    "pytest-playwright>=0.8.0",
+    "pytest-xdist>=3.8.0",
+    "python-dotenv>=1.2.2",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=2.1.0",
+    "pre-commit>=4.6.0",
+    "ruff>=0.15.20",
+]
+
+[tool.pytest.ini_options]
+addopts = "--base-url=https://automationexercise.com --strict-markers --strict-config --tracing=retain-on-failure --screenshot=only-on-failure --video=retain-on-failure"
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = [
+    "smoke: fast core happy-path tests",
+    "e2e: end-to-end user flow tests",
+    "negative: error and validation paths",
+    "regression: broader product and account coverage",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+src = ["pages", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "SIM", "RUF", "ARG", "C4", "S"]
+ignore = [
+    "ARG001",
+    "ARG002",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.13"
+files = ["pages", "tests", "conftest.py"]
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+disallow_untyped_decorators = false
+
+[tool.allure]
+results_dir = "allure-results"
