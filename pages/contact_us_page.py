@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from playwright.sync_api import Locator
+from playwright.sync_api import Page
 
 from pages.base_page import BasePage
 
@@ -14,45 +14,19 @@ class ContactUsPage(BasePage):
 
     url = "/contact_us"
 
-    @property
-    def contact_us_heading(self) -> Locator:
-        return self.page.get_by_role("heading", name="CONTACT US")
-
-    @property
-    def get_in_touch_heading(self) -> Locator:
-        return self.page.get_by_role("heading", name="GET IN TOUCH")
-
-    @property
-    def form(self) -> Locator:
-        return self.page.locator("#contact-us-form")
-
-    @property
-    def name_input(self) -> Locator:
-        return self.form.get_by_placeholder("Name")
-
-    @property
-    def email_input(self) -> Locator:
-        return self.form.get_by_placeholder("Email")
-
-    @property
-    def subject_input(self) -> Locator:
-        return self.form.get_by_placeholder("Subject")
-
-    @property
-    def message_textarea(self) -> Locator:
-        return self.form.get_by_placeholder("Your Message Here")
-
-    @property
-    def upload_file_input(self) -> Locator:
-        return self.form.locator("input[name='upload_file']")
-
-    @property
-    def submit_button(self) -> Locator:
-        return self.form.locator("input[name='submit']")
-
-    @property
-    def success_message(self) -> Locator:
-        return self.page.locator(".status.alert-success")
+    def __init__(self, page: Page) -> None:
+        super().__init__(page)
+        self.contact_us_heading = page.get_by_role("heading", name="CONTACT US")
+        self.get_in_touch_heading = page.get_by_role("heading", name="GET IN TOUCH")
+        self.form = page.locator("#contact-us-form")
+        # Field locators are scoped to the form; assigned after `self.form`.
+        self.name_input = self.form.get_by_placeholder("Name")
+        self.email_input = self.form.get_by_placeholder("Email")
+        self.subject_input = self.form.get_by_placeholder("Subject")
+        self.message_textarea = self.form.get_by_placeholder("Your Message Here")
+        self.upload_file_input = self.form.locator("input[name='upload_file']")
+        self.submit_button = self.form.locator("input[name='submit']")
+        self.success_message = page.locator(".status.alert-success")
 
     def load(self) -> None:
         """Open the contact page."""

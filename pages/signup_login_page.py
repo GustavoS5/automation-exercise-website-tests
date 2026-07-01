@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from playwright.sync_api import Locator
+from playwright.sync_api import Page
 
 from pages.base_page import BasePage
 
@@ -12,53 +12,23 @@ class SignupLoginPage(BasePage):
 
     url = "/login"
 
-    @property
-    def login_heading(self) -> Locator:
-        return self.page.get_by_role("heading", name="Login to your account")
-
-    @property
-    def signup_heading(self) -> Locator:
-        return self.page.get_by_role("heading", name="New User Signup!")
-
-    @property
-    def login_form(self) -> Locator:
-        return self.page.locator("form[action='/login']")
-
-    @property
-    def signup_form(self) -> Locator:
-        return self.page.locator("form[action='/signup']")
-
-    @property
-    def login_email_input(self) -> Locator:
-        return self.login_form.get_by_placeholder("Email Address")
-
-    @property
-    def login_password_input(self) -> Locator:
-        return self.login_form.get_by_placeholder("Password")
-
-    @property
-    def login_button(self) -> Locator:
-        return self.login_form.get_by_role("button", name="Login")
-
-    @property
-    def signup_name_input(self) -> Locator:
-        return self.signup_form.get_by_placeholder("Name")
-
-    @property
-    def signup_email_input(self) -> Locator:
-        return self.signup_form.get_by_placeholder("Email Address")
-
-    @property
-    def signup_button(self) -> Locator:
-        return self.signup_form.get_by_role("button", name="Signup")
-
-    @property
-    def invalid_login_message(self) -> Locator:
-        return self.page.get_by_text("Your email or password is incorrect!")
-
-    @property
-    def existing_email_message(self) -> Locator:
-        return self.page.get_by_text("Email Address already exist!")
+    def __init__(self, page: Page) -> None:
+        super().__init__(page)
+        self.login_heading = page.get_by_role("heading", name="Login to your account")
+        self.signup_heading = page.get_by_role("heading", name="New User Signup!")
+        self.login_form = page.locator("form[action='/login']")
+        self.signup_form = page.locator("form[action='/signup']")
+        # Field locators are scoped to their forms; assigned after the forms.
+        self.login_email_input = self.login_form.get_by_placeholder("Email Address")
+        self.login_password_input = self.login_form.get_by_placeholder("Password")
+        self.login_button = self.login_form.get_by_role("button", name="Login")
+        self.signup_name_input = self.signup_form.get_by_placeholder("Name")
+        self.signup_email_input = self.signup_form.get_by_placeholder("Email Address")
+        self.signup_button = self.signup_form.get_by_role("button", name="Signup")
+        self.invalid_login_message = page.get_by_text(
+            "Your email or password is incorrect!"
+        )
+        self.existing_email_message = page.get_by_text("Email Address already exist!")
 
     def load(self) -> None:
         """Open the signup/login page."""

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 
-from playwright.sync_api import Locator
+from playwright.sync_api import Locator, Page
 
 from pages.base_page import BasePage
 
@@ -14,20 +14,14 @@ class HomePage(BasePage):
 
     url = "/"
 
-    @property
-    def hero_heading(self) -> Locator:
-        return self.page.get_by_role(
+    def __init__(self, page: Page) -> None:
+        super().__init__(page)
+        self.hero_heading = page.get_by_role(
             "heading",
             name=re.compile("Full-Fledged practice website", re.IGNORECASE),
         ).first
-
-    @property
-    def features_heading(self) -> Locator:
-        return self.page.get_by_role("heading", name="FEATURES ITEMS")
-
-    @property
-    def product_cards(self) -> Locator:
-        return self.page.locator(".features_items .product-image-wrapper")
+        self.features_heading = page.get_by_role("heading", name="FEATURES ITEMS")
+        self.product_cards = page.locator(".features_items .product-image-wrapper")
 
     def product_card_by_name(self, product_name: str) -> Locator:
         """Return a product card containing the requested product name."""

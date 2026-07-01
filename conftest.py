@@ -29,8 +29,6 @@ _AD_HOST_RE = re.compile("|".join(AD_HOSTS))
 def _abort_ads(route: Route) -> None:
     """Block AdSense/Google-Ads requests; let everything else through."""
     if _AD_HOST_RE.search(route.request.url):
-        # Playwright error codes are lowercase w/o underscores:
-        # e.g. "blockedbyclient" (NOT "blocked_by_client").
         route.abort("blockedbyclient")
         return
     route.continue_()

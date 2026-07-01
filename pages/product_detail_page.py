@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from playwright.sync_api import Locator, Page
+from playwright.sync_api import Page
 
 from pages.base_page import BasePage
 from pages.cart_modal import CartModal
@@ -16,42 +16,17 @@ class ProductDetailPage(BasePage):
     def __init__(self, page: Page, product_id: int = 1) -> None:
         super().__init__(page)
         self.product_id = product_id
-
-    @property
-    def product_information(self) -> Locator:
-        return self.page.locator(".product-information")
-
-    @property
-    def product_name(self) -> Locator:
-        return self.product_information.locator("h2")
-
-    @property
-    def category_text(self) -> Locator:
-        return self.product_information.locator("p").filter(has_text="Category")
-
-    @property
-    def quantity_input(self) -> Locator:
-        return self.page.locator("#quantity")
-
-    @property
-    def add_to_cart_button(self) -> Locator:
-        return self.page.locator("button.cart")
-
-    @property
-    def review_name_input(self) -> Locator:
-        return self.page.locator("#review-form #name")
-
-    @property
-    def review_email_input(self) -> Locator:
-        return self.page.locator("#review-form #email")
-
-    @property
-    def review_textarea(self) -> Locator:
-        return self.page.locator("#review-form #review")
-
-    @property
-    def review_submit_button(self) -> Locator:
-        return self.page.locator("#button-review")
+        self.product_information = page.locator(".product-information")
+        self.product_name = self.product_information.locator("h2")
+        self.category_text = self.product_information.locator("p").filter(
+            has_text="Category"
+        )
+        self.quantity_input = page.locator("#quantity")
+        self.add_to_cart_button = page.locator("button.cart")
+        self.review_name_input = page.locator("#review-form #name")
+        self.review_email_input = page.locator("#review-form #email")
+        self.review_textarea = page.locator("#review-form #review")
+        self.review_submit_button = page.locator("#button-review")
 
     def load(self, product_id: int | None = None) -> None:
         """Open a product details page by product id."""

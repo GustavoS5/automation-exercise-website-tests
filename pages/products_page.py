@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from playwright.sync_api import Locator
+from playwright.sync_api import Locator, Page
 
 from pages.base_page import BasePage
 from pages.cart_modal import CartModal
@@ -13,25 +13,15 @@ class ProductsPage(BasePage):
 
     url = "/products"
 
-    @property
-    def all_products_heading(self) -> Locator:
-        return self.page.get_by_role("heading", name="ALL PRODUCTS")
-
-    @property
-    def searched_products_heading(self) -> Locator:
-        return self.page.get_by_role("heading", name="SEARCHED PRODUCTS")
-
-    @property
-    def search_input(self) -> Locator:
-        return self.page.get_by_placeholder("Search Product")
-
-    @property
-    def search_button(self) -> Locator:
-        return self.page.locator("#submit_search")
-
-    @property
-    def product_cards(self) -> Locator:
-        return self.page.locator(".features_items .product-image-wrapper")
+    def __init__(self, page: Page) -> None:
+        super().__init__(page)
+        self.all_products_heading = page.get_by_role("heading", name="ALL PRODUCTS")
+        self.searched_products_heading = page.get_by_role(
+            "heading", name="SEARCHED PRODUCTS"
+        )
+        self.search_input = page.get_by_placeholder("Search Product")
+        self.search_button = page.locator("#submit_search")
+        self.product_cards = page.locator(".features_items .product-image-wrapper")
 
     def load(self) -> None:
         """Open the products listing page."""
@@ -50,11 +40,12 @@ class ProductsPage(BasePage):
         """Open a product detail page from the listing."""
         self.page.locator(f"a[href='/product_details/{product_id}']").first.click()
 
+    def _add_to_cart_link_by_id(self, product_id: int) -> Locator:
+        return self.page.locator(f"a.add-to-cart[data-product-id='{product_id}']").first
+
     def add_product_to_cart_by_id(self, product_id: int) -> CartModal:
         """Add a product to cart from the listing by product id."""
-        self.page.locator(
-            f"a.add-to-cart[data-product-id='{product_id}']"
-        ).first.click()
+        self._add_to_cart_link_by_id(product_id).click()
         modal = CartModal(self.page)
         modal.wait_until_visible()
         return modal
