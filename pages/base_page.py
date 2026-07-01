@@ -29,6 +29,7 @@ class BasePage:
             has_text=re.compile("Logged in as")
         )
         self.contact_us_link = page.locator("header a[href='/contact_us']").first
+        self.test_cases_link = page.locator("header a[href='/test_cases']").first
         self.subscription_heading = page.get_by_role("heading", name="SUBSCRIPTION")
         self.subscription_email_input = page.get_by_placeholder("Your email address")
         self.subscribe_button = page.locator("#subscribe")
@@ -70,6 +71,10 @@ class BasePage:
     def go_to_contact_us(self) -> None:
         """Navigate to the contact page from the shared header."""
         self.contact_us_link.click()
+
+    def go_to_test_cases(self) -> None:
+        """Navigate to the test cases page from the shared header."""
+        self.test_cases_link.click()
 
     def subscribe(self, email: str) -> Locator:
         """Subscribe from the shared footer and return the success message."""
