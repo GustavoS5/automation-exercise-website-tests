@@ -1,7 +1,7 @@
 """API tests for Automation Exercise -- covers all 14 documented endpoints.
 
 Each test validates both the HTTP transport status and the JSON response
-body using Pydantic models defined in ``tests.api_models``.
+body using Pydantic models defined in ``tests.api.api_models``.
 
 Important: the Automation Exercise API always answers with HTTP 200; the
 real status is carried in the ``responseCode`` field of the JSON body.
@@ -13,12 +13,10 @@ API reference: https://automationexercise.com/api_list
 
 from __future__ import annotations
 
-from typing import Any
-
 import pytest
-from playwright.sync_api import APIRequestContext, APIResponse
+from playwright.sync_api import APIRequestContext
 
-from tests.api_models import (
+from tests.api.api_models import (
     AccountPayload,
     ApiResponse,
     BrandsListResponse,
@@ -26,17 +24,6 @@ from tests.api_models import (
     SearchProductResponse,
     UserDetailResponse,
 )
-
-# --------------------------------------------------------------------------- #
-# Helpers
-# --------------------------------------------------------------------------- #
-
-
-def _json(response: APIResponse) -> dict[str, Any]:
-    """Parse an ``APIResponse`` body as a JSON dictionary."""
-    data: dict[str, Any] = response.json()
-    return data
-
 
 # --------------------------------------------------------------------------- #
 # API 1-2: Products List
@@ -50,7 +37,7 @@ def test_api1_get_all_products_list(api_context: APIRequestContext) -> None:
     response = api_context.get("/api/productsList")
 
     assert response.ok
-    validated = ProductsListResponse.model_validate(_json(response))
+    validated = ProductsListResponse.model_validate(response.json())
 
     assert validated.response_code == 200
     assert len(validated.products) > 0
@@ -69,7 +56,7 @@ def test_api2_post_to_all_products_list(api_context: APIRequestContext) -> None:
     """API 2: POST /api/productsList is not supported (405)."""
     response = api_context.post("/api/productsList")
 
-    validated = ApiResponse.model_validate(_json(response))
+    validated = ApiResponse.model_validate(response.json())
 
     assert validated.response_code == 405
     assert validated.message == "This request method is not supported."
@@ -87,7 +74,7 @@ def test_api3_get_all_brands_list(api_context: APIRequestContext) -> None:
     response = api_context.get("/api/brandsList")
 
     assert response.ok
-    validated = BrandsListResponse.model_validate(_json(response))
+    validated = BrandsListResponse.model_validate(response.json())
 
     assert validated.response_code == 200
     assert len(validated.brands) > 0
@@ -102,7 +89,7 @@ def test_api4_put_to_all_brands_list(api_context: APIRequestContext) -> None:
     """API 4: PUT /api/brandsList is not supported (405)."""
     response = api_context.put("/api/brandsList")
 
-    validated = ApiResponse.model_validate(_json(response))
+    validated = ApiResponse.model_validate(response.json())
 
     assert validated.response_code == 405
     assert validated.message == "This request method is not supported."
@@ -123,7 +110,7 @@ def test_api5_post_search_product(api_context: APIRequestContext) -> None:
         form={"search_product": search_term},
     )
 
-    validated = SearchProductResponse.model_validate(_json(response))
+    validated = SearchProductResponse.model_validate(response.json())
 
     assert validated.response_code == 200
     assert len(validated.products) > 0
@@ -142,7 +129,7 @@ def test_api6_search_product_without_param(api_context: APIRequestContext) -> No
     """API 6: POST /api/searchProduct without search_product returns 400."""
     response = api_context.post("/api/searchProduct")
 
-    validated = ApiResponse.model_validate(_json(response))
+    validated = ApiResponse.model_validate(response.json())
 
     assert validated.response_code == 400
     assert validated.message == (
@@ -170,7 +157,7 @@ def test_api7_verify_login_valid_details(
         },
     )
 
-    validated = ApiResponse.model_validate(_json(response))
+    validated = ApiResponse.model_validate(response.json())
 
     assert validated.response_code == 200
     assert validated.message == "User exists!"
@@ -185,7 +172,7 @@ def test_api8_verify_login_without_email(api_context: APIRequestContext) -> None
         form={"password": "somepassword"},
     )
 
-    validated = ApiResponse.model_validate(_json(response))
+    validated = ApiResponse.model_validate(response.json())
 
     assert validated.response_code == 400
     assert validated.message == (
@@ -199,7 +186,7 @@ def test_api9_delete_to_verify_login(api_context: APIRequestContext) -> None:
     """API 9: DELETE /api/verifyLogin is not supported (405)."""
     response = api_context.delete("/api/verifyLogin")
 
-    validated = ApiResponse.model_validate(_json(response))
+    validated = ApiResponse.model_validate(response.json())
 
     assert validated.response_code == 405
     assert validated.message == "This request method is not supported."
@@ -217,7 +204,7 @@ def test_api10_verify_login_invalid_details(api_context: APIRequestContext) -> N
         },
     )
 
-    validated = ApiResponse.model_validate(_json(response))
+    validated = ApiResponse.model_validate(response.json())
 
     assert validated.response_code == 404
     assert validated.message == "User not found!"
@@ -240,7 +227,7 @@ def test_api11_create_user_account(
             "/api/createAccount", form=account_payload.to_form()
         )
 
-        validated = ApiResponse.model_validate(_json(response))
+        validated = ApiResponse.model_validate(response.json())
 
         assert validated.response_code == 201
         assert validated.message == "User created!"
@@ -275,7 +262,7 @@ def test_api12_delete_user_account(
         },
     )
 
-    validated = ApiResponse.model_validate(_json(response))
+    validated = ApiResponse.model_validate(response.json())
 
     assert validated.response_code == 200
     assert validated.message == "Account deleted!"
@@ -291,7 +278,7 @@ def test_api13_update_user_account(
     updated_data = created_account.model_copy(update={"name": "Updated Name"})
     response = api_context.put("/api/updateAccount", form=updated_data.to_form())
 
-    validated = ApiResponse.model_validate(_json(response))
+    validated = ApiResponse.model_validate(response.json())
 
     assert validated.response_code == 200
     assert validated.message == "User updated!"
@@ -301,7 +288,7 @@ def test_api13_update_user_account(
         "/api/getUserDetailByEmail",
         params={"email": created_account.email},
     )
-    user = UserDetailResponse.model_validate(_json(detail)).user
+    user = UserDetailResponse.model_validate(detail.json()).user
     assert user.name == "Updated Name"
 
 
@@ -317,7 +304,7 @@ def test_api14_get_user_detail_by_email(
         params={"email": created_account.email},
     )
 
-    validated = UserDetailResponse.model_validate(_json(response))
+    validated = UserDetailResponse.model_validate(response.json())
 
     assert validated.response_code == 200
     assert validated.user.email == created_account.email
